@@ -36,6 +36,7 @@ int main(int argc, char *argv[]){
 		//Send current time for example
 		snprintf(sendBuff, sizeof(sendBuff), "%.24s\r\n", ctime(&ticks));
 		write(connfd, sendBuff, strlen(sendBuff));
+		printf(sendBuff);
 
 		close(connfd);
 		sleep(1);
