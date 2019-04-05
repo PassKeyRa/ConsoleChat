@@ -13,12 +13,12 @@ int main(int argc, char *argv[]){
 	int listenfd = 0, connfd = 0;
 	struct sockaddr_in serv_addr;
 
-	char sendBuff[1025];
+	char recvBuff[1025];
 	time_t ticks;
 
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	memset(&serv_addr, '0', sizeof(serv_addr));
-	memset(sendBuff, '0', sizeof(sendBuff));
+	memset(recvBuff, '0', sizeof(recvBuff));
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -34,9 +34,14 @@ int main(int argc, char *argv[]){
 		ticks = time(NULL);
 		
 		//Send current time for example
-		snprintf(sendBuff, sizeof(sendBuff), "%.24s\r\n", ctime(&ticks));
-		write(connfd, sendBuff, strlen(sendBuff));
-		printf(sendBuff);
+		//snprintf(sendBuff, sizeof(sendBuff), "%.24s\r\n", ctime(&ticks));
+		int n = 0;
+		while((n = read(connfd, recvBuff, sizeof(recvBuff)-1))>0){
+			recvBuff[n] = 0;
+			if(fputs(recvBuff, stdout) == EOF){
+				printf("\nError: fputs error\n");
+			}
+		}
 
 		close(connfd);
 		sleep(1);
