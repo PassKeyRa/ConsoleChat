@@ -24,8 +24,8 @@ int main(int argc, char *argv[]){
 		return 1;
 	}
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(3490);
 	serv_addr.sin_addr.s_addr = INADDR_ANY;
+	serv_addr.sin_port = htons(3490);
 	
 	if(bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0){
 		perror("bind failed.");
@@ -33,17 +33,32 @@ int main(int argc, char *argv[]){
 	}
 	listen(listenfd, 10);
 
-	printf("Wating for connections...\n");
+	puts("Wating for connections...");
+	int c = sizeof(struct sockaddr_in);
 	while(1){
-		connfd = accept(listenfd, (struct sockaddr *)&serv_addr, (socklen_t*)sizeof(serv_addr));
-		printf("Connection!\n");
-		if (connfd >= 0){
-			//printf("Connection!\n");
-			while( (n = recv(connfd, recvBuff, sizeof(recvBuff), 0)) > 0){
-				printf(recvBuff);
-				printf("\n");
-				//memset(recvBuff, '0', sizeof(recvBuff));
+		
+		connfd = accept(listenfd, (struct sockaddr *)&serv_addr, (socklen_t *)&c);
+		if(connfd < 0){
+			perror("accept failed");
+			return 1;
+		}
+		puts("Connection!");
+		while((n =  recv(connfd, recvBuff, sizeof(recvBuff), 0)) > 0){
+			recvBuff[n] = 0;
+			printf(recvBuff);
+			//printf("%d\n", strlen(recvBuff));
+			if(send(connfd, recvBuff, strlen(recvBuff), 0) < 0){
+				puts("send failed");
 			}
+			memset(recvBuff, '0', sizeof(recvBuff));
+		}
+		
+		if (n == 0){
+			puts("Client disconnected");
+			fflush(stdout);
+		}
+		else if (n == -1){
+			perror("recv failed");
 		}
 	}	
 
